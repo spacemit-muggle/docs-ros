@@ -1,6 +1,6 @@
-sidebar_position: 2
-
 # ROS2 MIPI Camera 节点 API
+
+---
 
 ## 1. 概览
 
@@ -18,6 +18,8 @@ sidebar_position: 2
 | `infer_node` | `/camera_frames` | —（打印/自处理）  | 对相机帧进行 YOLOv8 目标检测（示例模型）。 |
 
 > 注：所有消息字段（如 `width/height/stride/pix_format/is_dma/dma_fd/data` 等）随 `JdkFrameMsg` 传递。
+
+---
 
 ## 2. `camera_node`（相机采集）
 
@@ -48,6 +50,8 @@ ros2 run jdk_camera_node camera_node --ros-args \
 ### 2.6 订阅示例
 订阅`/camera_frames`，详细见 §6 通用订阅示例。
 
+---
+
 ## 3. `venc_node`（硬件编码）
 
 ### 3.1 功能说明
@@ -75,6 +79,8 @@ ros2 run jdk_camera_node camera_node --ros-args \
 ```bash
 ros2 run jdk_venc_node venc_node
 ```
+
+---
 
 ## 4. `vdec_node`（硬件解码）
 
@@ -104,6 +110,8 @@ ros2 run jdk_venc_node venc_node
 ros2 run jdk_vdec_node vdec_node
 ```
 
+---
+
 ## 5. `vo_node`（硬件显示）
 
 ### 5.1 功能说明
@@ -130,6 +138,8 @@ ros2 run jdk_vdec_node vdec_node
 ros2 run jdk_vo_node vo_node
 ```
 
+---
+
 ## 6. `infer_node`（目标检测推理）
 
 ### 6.1 功能说明
@@ -152,6 +162,7 @@ ros2 run jdk_vo_node vo_node
 ros2 run jdk_infer_node infer_node
 ```
 
+---
 
 ## 7. 统一订阅示例
 
@@ -188,6 +199,8 @@ def main():
 if __name__ == '__main__':
     main()
 ```
+
+---
 
 ## 8. 常见问题（FAQ，精要）
 

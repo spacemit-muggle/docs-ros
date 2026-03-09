@@ -1,5 +1,3 @@
-sidebar_position: 1
-
 # 小车跟随及语音交互
 
 [点击观看视频](https://archive.spacemit.com/ros2/Video_examples/agv-follow.mp4)
@@ -17,6 +15,8 @@ sidebar_position: 1
 - USB 扬声器一个
 - YDLIDAR X3 Pro 激光雷达（选配）
 
+
+
 ## 硬件连接图
 
 ![](./images/agv1.png)
@@ -30,6 +30,8 @@ sidebar_position: 1
 供电使用底板单片机的5V供电输出，见：
 
 ![](./images/uJghXh9kQb.png)
+
+
 
 ## 案例框架和控制流程
 
@@ -89,7 +91,7 @@ sudo apt install python3-opencv ros-humble-cv-bridge ros-humble-camera-info-mana
    ros-humble-image-transport python3-spacemit-ort python3-yaml libyaml-dev python3-numpy
 ```
 
-### 配置雷达包
+### **配置雷达包**
 
 ```
 git clone https://github.com/YDLIDAR/YDLidar-SDK.git
@@ -100,7 +102,9 @@ cmake --build . -- -j8
 sudo cmake --install .
 ```
 
-### 构建小车的 ROS 包
+
+
+### **构建小车的 ROS 包**
 
 ```
 mkdir -p ~/agv_mec_ws/src
@@ -149,6 +153,8 @@ sudo udevadm control --reload-rules
 sudo udevadm trigger
 ```
 
+
+
 ### 安装 Python 依赖
 
 下载源码
@@ -179,6 +185,8 @@ source ~/ai-env/bin/activate
 pip install pip -U
 pip install -r ~/agv-ai-pipeline/spacemit_audio/requirements.txt
 ```
+
+###
 
 ## 启动程序
 
@@ -266,6 +274,8 @@ ros2 service call /toggle_follow std_srvs/srv/SetBool "{data: true}"
 ```
 ros2 service call /toggle_follow std_srvs/srv/SetBool "{data: false}"
 ```
+
+
 
 ### 启动 Python 节点
 

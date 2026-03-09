@@ -1,6 +1,8 @@
-sidebar_position: 5
+# 基于RTAB‐Map的VSLAM
 
-# 基于 RTAB‐Map 的 VSLAM
+```
+最新版本：2025/10/23
+```
 
 ## 简介
 

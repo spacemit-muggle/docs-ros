@@ -1,5 +1,3 @@
-sidebar_position: 2
-
 # 机械臂智慧零售
 
 [点击观看视频](https://archive.spacemit.com/ros2/Video_examples/smart-retail.mp4)

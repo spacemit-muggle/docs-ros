@@ -1,5 +1,3 @@
-sidebar_position: 1
-
 # 激光雷达使用
 
 ## 简介

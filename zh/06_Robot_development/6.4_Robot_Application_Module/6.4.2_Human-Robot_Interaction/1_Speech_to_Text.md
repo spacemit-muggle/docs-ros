@@ -4,9 +4,13 @@ sidebar_position: 1
 
 # 语音转文字（ASR）
 
+```
+最新版本：2025/09/12
+```
+
 ## 功能简介
 
-本模块基于 SenseVoice ONNX 模型 实现语音转文字（Automatic Speech Recognition, ASR）功能。系统通过麦克风获取音频输入，结合 SpacemiT 智算核进行模型推理，并将识别结果通过 ROS2 消息发布。
+本模块基于 SenseVoice ONNX 模型 实现语音转文字（Automatic Speech Recognition, ASR）功能。系统通过麦克风获取音频输入，结合 SpaceMiT 智算核进行模型推理，并将识别结果通过 ROS2 消息发布。
 
 默认支持 唤醒词检测 + 语音识别 联动流程，实现语音控制的人机交互能力。
 

@@ -19,8 +19,8 @@ sidebar_position: 2
 
 ## 下载
 
-地址：[ROS2_LXQT Image](https://archive.spacemit.com/ros2/bianbu-ros-images/v1.5/ROS2_LXQT-v1.5rc3-20251107.zip)
+地址：[ROS2_LXQT Image](https://archive.spacemit.com/ros2/bianbu-ros-images/v1.5/ROS2_LXQT-v1.5-20251216.zip)
 
 ## 刷机
 
-Titan Flasher 刷机参考 [刷机工具使用手册](https://www.spacemit.com/community/document/info?lang=zh&nodepath=tools/user_guide/flasher_user_guide.md)。
+Titan Flasher 刷机参考 [刷机工具使用手册](https://developer.spacemit.com/documentation?token=O6wlwlXcoiBZUikVNh2cczhin5d)。
