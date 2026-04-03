@@ -1,16 +1,16 @@
 sidebar_position: 1
 
-# 激光雷达使用
+# Lidar Usage
 
-## 简介
+## Introduction
 
-本章节介绍在 ROS 2 Humble 下集成主流 2D 激光雷达（Lidar）设备的使用方法，包括 YDLidar 与 RPLidar 两类雷达的 SDK 编译、驱动功能包构建及后续使用说明。
+This chapter describes how to integrate and use mainstream 2D ​​Lidar devices within ROS 2 Humble. It covers the compilation of SDKs for two specific types of Lidars—YDLidar and RPLidar—as well as the construction of their driver packages and subsequent usage instructions.
 
-## YDLidar 驱动配置
+## YDLidar Driver Configuration
 
-### 编译 YDLidar SDK
+### Compiling the YDLidar SDK
 
-YDLidar ROS 2 驱动依赖其官方提供的 **YDLidar-SDK**，需先手动编译安装：
+The YDLidar ROS 2 driver relies on the official **YDLidar-SDK** provided by the manufacturer; therefore, you must first manually compile and install it:
 
 ```bash
 git clone https://github.com/YDLIDAR/YDLidar-SDK.git
@@ -21,7 +21,7 @@ cmake --build . -- -j8
 sudo cmake --install .
 ```
 
-### 构建 ROS2 功能包
+### Building the ROS 2 Package
 
 ```bash
 mkdir -p ~/demo_ws/src && cd ~/demo_ws/src
@@ -31,9 +31,9 @@ source /opt/ros/humble/setup.bash
 colcon build
 ```
 
-## RPLidar 驱动配置（rdlidar）
+## RPLidar Driver Configuration (rdlidar)
 
-### 编译 ROS2 功能包
+### Building the ROS 2 Package
 
 ```bash
 mkdir -p ~/demo_ws/src && cd ~/demo_ws/src
