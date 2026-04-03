@@ -1,6 +1,6 @@
 sidebar_position: 1
 
-# 6.2.1 相机系统
+# 6.2.1 Camera System
 
-- [USB 相机节点](1_USB_Camera_Node.md)
-- [ROS2 MIPI Camera 节点 API](2_ROS_Camera_Coding.md)
+- [USB Camera Node](1_USB_Camera_Node.md)
+- [ROS2 MIPI Camera Node API](2_ROS_Camera_Coding.md)
