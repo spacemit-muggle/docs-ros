@@ -1,3 +1,5 @@
+sidebar_position: 2
+
 # CMP10A IMU usage
 
 ## Hardware Connection
