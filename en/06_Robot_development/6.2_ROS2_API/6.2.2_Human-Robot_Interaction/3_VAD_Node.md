@@ -15,7 +15,7 @@ Core functions:
 
 ## Software and Hardware Environment
 
-* **Operating System**：ROS2_LXQT
+* **Operating System**：ROS2_LXQT 
 * **Recommended Hardware**：SpacemiT MUSE Pi Pro（with built-in NPU acceleration, suitable for edge inference scenarios）
 * **Dependency**：
   * ROS 2 Humble or higher
@@ -70,7 +70,7 @@ ros2 launch rdk_hri vad.launch.py
 ## C++ Subscription Example
 
 ```cpp
-#include "rclcpp/rclcpp.hpp"
+#include "rclcpp/rclcpp.hpp" 
 #include "jobot_interfaces/msg/vad_result.hpp"
 
 class VadResultListener : public rclcpp::Node

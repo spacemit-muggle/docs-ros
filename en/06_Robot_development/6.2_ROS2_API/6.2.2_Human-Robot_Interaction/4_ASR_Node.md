@@ -1,24 +1,24 @@
 sidebar_position: 4
 
-# ASR 节点
+# ASR Node
 
-## 功能说明
+## Function Description
 
-ASR（Automatic Speech Recognition，自动语音识别）节点用于将语音流转换为文本。
-该节点支持在线语音识别，可结合 VAD 节点使用，在检测到语音段落时启动识别，减少无效计算。
-典型应用场景包括语音对话、人机交互和语音控制等。
+ASR（Automatic Speech Recognition）node is used to convert audio streams into text.
 
-## 软硬件环境
+This node supports online speech recognition and can be used in conjunction with a VAD node to initiate recognition only when a speech segment is detected, thereby reducing unnecessary computation.
 
-* **硬件推荐**：
+## Hardware and Software Environment
 
-  * SpacemiT MUSE Pi Pro 或其他支持 ROS2_LXQT 的 RISC-V64 平台
-  * USB 麦克风（或其他音频采集设备）
-* **软件环境**：
+* **Recommended Hardware**：
 
-  * ROS2_LXQT 系统
+  * SpacemiT MUSE Pi Pro or any other RISC-V64 platform that supports ROS2_LXQT
+  * USB microphone (or other audio capture device)
+* **Software Environment**：
 
-## 依赖安装检查
+  * ROS2_LXQT system
+
+## Dependency Installation Check
 
 ```
 sudo apt update
@@ -33,32 +33,32 @@ sudo apt install -y libopenblas-dev \
  python3-venv
 ```
 
-配置虚拟环境
+Configuring the Virtual Environment
 
 ```
-# 设置镜像源
+# Set up mirror sources
 pip config set global.index-url https://mirrors.aliyun.com/pypi/simple/
 pip config set global.extra-index-url https://git.spacemit.com/api/v4/projects/33/packages/pypi/simple
 
-# 创建虚拟环境
+# Create the virtual environment
 python3 -m venv ~/asr_env
 source ~/asr_env/bin/activate
 
-# 安装依赖
+# Install dependencies
 pip install -r /opt/bros/humble/share/jobot_voice/requirements.txt
 ```
 
-## 需要订阅的话题
+## Required Subscribed Topics
 
 * `/audio/raw` (`jobot_interfaces/msg/AudioFrame`)
-* 输入音频帧数据，来自音频采集节点。
+* Input audio frame data, sourced from the audio capture node.
 
 * `/audio/vad_out` (`jobot_interfaces/msg/VADResult`)
-  * 可选的 VAD 订阅。
+  * Optional VAD subscription.
 
-## 启动命令
+## Launch Command
 
-使用 `ros2 launch` 启动：
+Launch using `ros2 launch` ：
 
 ```
 source /opt/bros/humble/setup.bash
@@ -70,25 +70,25 @@ export PYTHONPATH=~/asr_env/lib/python3.12/site-packages/:$PYTHONPATH
 ros2 launch rdk_hri asr.launch.py
 ```
 
-## 发布的话题
+## Published Topics
 
 * `/voice_text` (`std_msgs/msg/String`)
-* 输出识别后的文本结果。
+* Output the recognized text result.
 
-## 参数列表
+## Parameter List
 
-|     参数名     |  类型  |      默认值      |         候选值         |                          说明                          |
+|     Parameter Name     |  Type  |      Default Value      |         Candidate Value         |               Description                         |
 | :------------: | :----: | :--------------: | :--------------------: | :----------------------------------------------------: |
-| `result_topic` | string |   `voice_text`   |         自定义         |                  ASR 识别结果输出话题                  |
-|  `sub_topic`   | string |   `/audio/raw`   | 与音频采集节点发布一致 |          输入音频流话题（由音频采集节点提供）          |
-|   `language`   | string |       `zh`       |         zh、en         |           识别语言（`zh` 中文 / `en` 英文）            |
-|     `sld`      | double |      `1.0`       |          > 0           | 录音启动后静音最大时长（秒），超过则结束录音开始转文字 |
-|    `min_db`    |  int   |      `2000`      |      建议 > 2000       |                 判定为有声音的能量阈值                 |
-|   `max_time`   | double |      `10.0`      |          > 0           |                 单段录音最长时长（秒）                 |
-|   `use_vad`    |  bool  |     `false`      |      false、true       |                 是否启用外部 VAD 结果                  |
-|  `vad_topic`   | string | `/audio/vad_out` |  与 VAD 节点保持一致   |                    订阅 VAD 话题名                     |
+| `result_topic` | string |   `voice_text`   |         Customizable       |                  ASR recognition result output topic                  |
+|  `sub_topic`   | string |   `/audio/raw`   | Must match audio capture node |          Input audio stream topic (provided by audio capture node)          |
+|   `language`   | string |       `zh`       |         zh、en         |           Recognition language (`zh`: Chinese / `en`: English)            |
+|     `sld`      | double |      `1.0`       |          > 0           | The maximum duration of mute after recording starts (seconds), if exceeded, the recording ends and text conversion begins |
+|    `min_db`    |  int   |      `2000`      |      Recommended > 2000       |                 Energy threshold for detecting sound                 |
+|   `max_time`   | double |      `10.0`      |          > 0           |                 Maximum duration (seconds) for a single recording                 |
+|   `use_vad`    |  bool  |     `false`      |      false、true       |                 Whether to enable external VAD results                  |
+|  `vad_topic`   | string | `/audio/vad_out` |   Consistent with VAD node   |                   Subscribe to VAD topic name                     |
 
-## C++ 订阅示例
+## C++ Subscription Example
 
 ```cpp
 #include "rclcpp/rclcpp.hpp"
@@ -100,7 +100,7 @@ public:
         sub_ = this->create_subscription<std_msgs::msg::String>(
             "/voice_text", 10,
             [this](const std_msgs::msg::String::SharedPtr msg) {
-                RCLCPP_INFO(this->get_logger(), "识别结果: %s", msg->data.c_str());
+                RCLCPP_INFO(this->get_logger(), "Recognition result: %s", msg->data.c_str());
             });
     }
 private:
@@ -115,7 +115,7 @@ int main(int argc, char *argv[]) {
 }
 ```
 
-## Python 订阅示例
+## Python Subscription Example
 
 ```python
 import rclpy
@@ -132,7 +132,7 @@ class ASRClient(Node):
             10)
 
     def listener_callback(self, msg):
-        self.get_logger().info(f"识别结果: {msg.data}")
+        self.get_logger().info(f"Recognition result: {msg.data}")
 
 def main(args=None):
     rclpy.init(args=args)
