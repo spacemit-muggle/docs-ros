@@ -1,73 +1,73 @@
 sidebar_position: 3
 
-# VAD 节点
+# VAD Node
 
-## 功能说明
+## Function Description
 
-VAD（Voice Activity Detection，语音活动检测）节点用于从连续的音频流中检测人声语音片段，输出人声概率以及是否存在人声的判定结果。
-该节点可作为语音唤醒（Wake Word）、ASR 前端的辅助模块，用于减少无效音频数据处理，提高系统效率。
+The VAD (Voice Activity Detection) node is used to detect segments of human speech within a continuous audio stream, outputting both the probability of speech presence and a binary determination of whether speech is present.
+This node serves as an auxiliary module for Wake Word and ASR front-ends, reducing invalid audio data processing and improving system efficiency.
 
-核心功能：
+Core functions:
 
-* 订阅音频数据（`jobot_interfaces/msg/AudioFrame`）
-* 利用 **Silero VAD 模型（ONNX）** 进行实时推理
-* 发布语音活动检测结果（`jobot_interfaces/msg/VADResult`）
+* Subscribe to audio data（`jobot_interfaces/msg/AudioFrame`）
+* Perform real-time inference using the**Silero VAD model (ONNX)**
+* Publish Voice Activity Detection results（`jobot_interfaces/msg/VADResult`）
 
-## 软硬件环境
+## Software and Hardware Environment
 
-* **操作系统**：ROS2_LXQT
-* **硬件推荐**：SpacemiT MUSE Pi Pro（内置 NPU 加速，适合边缘推理场景）
-* **依赖库**：
-  * ROS 2 Humble 或更高版本
-  * SpacemiT ONNX Runtime（CPU/NPU 推理）
-  * PortAudio / ALSA（用于音频输入）
+* **Operating System**：ROS2_LXQT
+* **Recommended Hardware**：SpacemiT MUSE Pi Pro（with built-in NPU acceleration, suitable for edge inference scenarios）
+* **Dependency**：
+  * ROS 2 Humble or higher
+  * SpacemiT ONNX Runtime（CPU/NPU inference）
+  * PortAudio / ALSA（for audio input）
 
-### 常用测试工具（开发/调试阶段）
+### Common Testing Tools (Development/Debugging Phase)
 
-* `rqt_graph`：可视化 ROS 节点和话题连接关系
-* `ros2 topic echo`：查看消息内容
-* `ros2 topic hz`：检查话题发布频率
+* `rqt_graph`：Visualizes ROS node and topic connections
+* `ros2 topic echo`：Views message content
+* `ros2 topic hz`：Checks topic publishing frequency
 
-## 依赖安装检查
+## Dependency Installation Check
 
 ```
 sudo apt install -y ros-humble-ros-base python3-pyaudio python3-spacemit-ort libfftw3-dev
 ```
 
-## 需要订阅的话题
+## Subscribed Topics
 
-* **音频输入**：
-  * 默认订阅话题名称：`/audio/raw`
-  * 消息类型：`jobot_interfaces/msg/AudioFrame`
-  * 内容：包含采样率、声道数、采样格式（pcm/float32）和音频数据数组
+* **Audio Input**：
+  * Default subscribed topic name：`/audio/raw`
+  * Message type：`jobot_interfaces/msg/AudioFrame`
+  * Content: Includes the sample rate, number of channels, sample format（pcm/float32）and audio data array
 
-## 启动命令
+## Launch Command
 
-使用 `ros2 launch` 启动 VAD 节点：
+Use `ros2 launch` to start the VAD node:
 
 ```bash
 ros2 launch rdk_hri vad.launch.py
 ```
 
-## 发布的话题
+## Published Topics
 
-* 话题名称：`/audio/vad_out`
-* 消息类型：`jobot_interfaces/msg/VADResult`
-* 字段说明：
+* Topic name：`/audio/vad_out`
+* Message type：`jobot_interfaces/msg/VADResult`
+* Field Descriptions：
 
-  * `std_msgs/Header header`：时间戳和 frame\_id
-  * `float32 prob`：当前帧属于语音的概率
-  * `bool is_speech`：是否检测到语音
+  * `std_msgs/Header header`：Timestamp and frame\_id
+  * `float32 prob`：The probability that the current frame belongs to speech
+  * `bool is_speech`：Whether speech is detected
 
-## 参数详解
+## Parameter Details
 
-| 参数名      | 类型   | 默认值         | 说明                       |
+| Parameter Name      | Type   | Default Value         | Description                       |
 | ----------- | ------ | -------------- | -------------------------- |
-| `trig_on`   | float  | 0.23           | 判定是否存在人声的概率阈值 |
-| `sub_topic` | string | /audio/raw     | 订阅的音频流话题           |
-| `pub_topic` | string | /audio/vad_out | 发布的 VAD 结果话题名      |
+| `trig_on`   | float  | 0.23           | Probability threshold for detecting the presence of speech |
+| `sub_topic` | string | /audio/raw     | Topic for subscribing to the audio stream           |
+| `pub_topic` | string | /audio/vad_out | Topic for publishing VAD results      |
 
-## C++ 订阅示例
+## C++ Subscription Example
 
 ```cpp
 #include "rclcpp/rclcpp.hpp"
@@ -100,7 +100,7 @@ int main(int argc, char **argv)
 }
 ```
 
-## Python 订阅示例
+## Python Subscription Example
 
 ```python
 import rclpy
