@@ -1,49 +1,49 @@
 sidebar_position: 1
 
-# 消息接口说明
+# Message Interface Specifications
 
-## 音频消息
+## Audio Messages
 
-消息文件位置：`jobot_interfaces/msg/AudioFrame.msg`
+Message file location：`jobot_interfaces/msg/AudioFrame.msg`
 
-用于传输音频数据流，包含时间戳、采样信息和原始 PCM 数据。
+Used for transmitting audio data streams; contains timestamps, sampling information, and raw PCM data.
 
-### 消息定义
+### Message Definition
 
 ```text
-# 头部，包含时间戳和frame_id
+# Header; contains timestamp and frame_id
 std_msgs/Header header
 
-# 采样率
+# Sample rate
 int32 sample_rate
 
-# 声道数
+# Number of channels
 int32 channels
 
-# 格式（0=PCM16, 1=float32）
+# Format（0=PCM16, 1=float32）
 int32 sample_format
 
-# 每一帧音频数据（int16 PCM）
+# Audio data for a single frame (int16 PCM)
 int16[] data
 ```
 
-### 字段说明
+### Field Descriptions
 
-| 字段名          | 类型              | 说明                                    |
+| Field Name          | Type              | Description                                    |
 | --------------- | ----------------- | --------------------------------------- |
-| `header`        | `std_msgs/Header` | ROS 标准消息头，包含时间戳和 `frame_id` |
-| `sample_rate`   | `int32`           | 采样率（Hz），如 `16000`、`48000`       |
-| `channels`      | `int32`           | 声道数（1=单声道，2=立体声等）          |
-| `sample_format` | `int32`           | 数据格式：`0=PCM16`，`1=float32`        |
-| `data`          | `int16[]`         | 音频帧数据（PCM 16bit 小端序）          |
+| `header`        | `std_msgs/Header` | ROS standard message header; contains timestamp and `frame_id` |
+| `sample_rate`   | `int32`           | Sample rate (Hz), e.g., `16000`, `48000`     |
+| `channels`      | `int32`           | Number of channels (1=mono, 2=stereo, etc.)          |
+| `sample_format` | `int32`           | Data format: `0=PCM16`, `1=float32`        |
+| `data`          | `int16[]`         | Audio frame data (PCM 16-bit, little-endian)          |
 
-### 使用说明
+### Usage Instructions
 
-订阅该消息时，可以通过 `header.stamp` 获取时间戳，用于和其他传感器同步；
- `sample_rate` 和 `channels` 用于解码音频数据；
- `data` 则是原始音频样本数组，可以直接写入 WAV 文件或输入到 ASR 模型。
+When subscribing to this message, the timestamp can be retrieved via `header.stamp`, which is used for synchronization with other sensors;
+`sample_rate` and `channels` are used for decoding the audio data;
+`data` is an array of raw audio samples, which can be written directly to a WAV file or fed into an ASR model.
 
-### Python 订阅示例（rclpy）
+### Python Subscription Example (rclpy)
 
 ```python
 import rclpy
@@ -55,7 +55,7 @@ class AudioSubscriber(Node):
         super().__init__('audio_subscriber')
         self.subscription = self.create_subscription(
             AudioFrame,
-            'audio_frames',   # 话题名
+            'audio_frames',   # Topic name
             self.callback,
             10
         )
@@ -67,7 +67,7 @@ class AudioSubscriber(Node):
             f"format={msg.sample_format}, "
             f"len(data)={len(msg.data)}"
         )
-        # 例如：取前 10 个采样点
+        # Example: Retrieve the first 10 samples
         print("Samples:", msg.data[:10])
 
 def main(args=None):
@@ -81,7 +81,7 @@ if __name__ == '__main__':
     main()
 ```
 
-### C++ 订阅示例（rclcpp）
+### C++ Subscription Example (rclcpp)
 
 ```cpp
 #include "rclcpp/rclcpp.hpp"
@@ -105,7 +105,7 @@ private:
             "Received audio: rate=%d, channels=%d, format=%d, len(data)=%zu",
             msg->sample_rate, msg->channels, msg->sample_format, msg->data.size());
 
-        // 示例：输出前 10 个采样点
+        // Example: Output the first 10 sampling points
         for (size_t i = 0; i < std::min((size_t)10, msg->data.size()); i++)
         {
             std::cout << msg->data[i] << " ";
@@ -127,33 +127,33 @@ int main(int argc, char * argv[])
 
 ## VAD
 
-消息文件位置：`jobot_interfaces/msg/VADResult.msg`
+Message File Location: `jobot_interfaces/msg/VADResult.msg`
 
-该消息用于表示语音活动检测（Voice Activity Detection, VAD）的结果，包含语音出现的概率和是否检测到语音。
+This message represents the result of Voice Activity Detection (VAD), including the probability of speech occurrence and whether speech was detected.
 
-### 消息定义
+### Message Definition
 
 ```text
 std_msgs/Header header
-float32 prob        # 语音概率
-bool is_speech      # 是否检测到语音
+float32 prob        # Speech probability
+bool is_speech      # Whether speech was detected
 ```
 
-### 字段说明
+### Field Descriptions
 
-| 字段名      | 类型              | 说明                                                         |
+| Field Name      | Type              | Description                                                         |
 | ----------- | ----------------- | ------------------------------------------------------------ |
-| `header`    | `std_msgs/Header` | ROS 标准消息头，包含时间戳和 `frame_id`，用于与音频帧进行时间同步 |
-| `prob`      | `float32`         | 语音活动概率，范围 [0.0, 1.0]，表示当前帧包含语音的置信度    |
-| `is_speech` | `bool`            | 是否检测到语音，`true`=有人声，`false`=无人声                |
+| `header`    | `std_msgs/Header` | ROS standard message header, containing a timestamp and `frame_id`, used for time synchronization with audio frames. |
+| `prob`      | `float32`         | Probability of speech activity; range [0.0, 1.0], indicating the confidence that the current frame contains speech.    |
+| `is_speech` | `bool`            | Whether speech was detected: `true` = speech present, `false` = no speech present.                |
 
-### 使用场景
+### Use Cases
 
-- **语音触发**：可用于唤醒词检测前的语音段检测，减少误触发。
-- **ASR 前处理**：在传给语音识别（ASR）前过滤掉静音帧，节省计算资源。
-- **机器人对话系统**：在多模态交互中，判断用户是否正在说话。
+- **Voice Triggering**： Can be used for voice segment detection before wake-up word detection, reducing false triggering.
+- **ASR Preprocessing**： Filter out silent frames before passing them to speech recognition (ASR) to save computational resources.
+- **Robot Dialogue Systems**：In multimodal interaction scenarios, determines whether the user is currently speaking.
 
-### Python 订阅示例
+### Python Subscription Example
 
 ```python
 import rclpy
@@ -186,7 +186,7 @@ if __name__ == '__main__':
     main()
 ```
 
-### C++ 订阅示例
+### C++ Subscription Example
 
 ```cpp
 #include "rclcpp/rclcpp.hpp"
