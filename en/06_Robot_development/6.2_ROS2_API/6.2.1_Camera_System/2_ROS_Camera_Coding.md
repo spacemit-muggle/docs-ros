@@ -1,161 +1,161 @@
 sidebar_position: 2
 
-# ROS2 MIPI Camera 节点 API
+# ROS2 MIPI Camera Node API
 
-## 1. 概览
+## 1. Overview
 
-- **节点组件**：`camera_node`（采集）、`venc_node`（硬编）、`vdec_node`（硬解）、`vo_node`（显示）、`infer_node`（推理）  
-- **核心消息**：`jdk_interfaces/msg/JdkFrameMsg` 在各节点之间传递帧（含 DMA/FD 方式）
+- **Node components**：`camera_node`（acquisition）、`venc_node`（hard-coded）、`vdec_node`（hard-decoded）、`vo_node`（display）、`infer_node`（inference）  
+- **Core message**：`jdk_interfaces/msg/JdkFrameMsg` transfers frames between nodes (including DMA/FD mode)
 
-### 1.1 节点与话题总览
+### 1.1 Overview of nodes and topics
 
-| 节点         | 订阅话题         | 发布话题          | 说明 |
+| Node         | Subscribe to topic         | Publish topic          | Description |
 |--------------|------------------|-------------------|------|
-| `camera_node`| —                | `/camera_frames`  | 采集 NV12 帧并发布，支持 FD/DMA 共享；可提供 FD 套接字服务。 |
-| `venc_node`  | `/camera_frames` | `/encoded_frames` | 将原始帧硬件编码为 H.264/H.265。 |
-| `vdec_node`  | `/encoded_frames`| `/decoded_frames` | 将编码帧解码为 NV12。 |
-| `vo_node`    | `/camera_frames` | —                 | 硬件直出显示画面（JdkVo）。 |
-| `infer_node` | `/camera_frames` | —（打印/自处理）  | 对相机帧进行 YOLOv8 目标检测（示例模型）。 |
+| `camera_node`| —                | `/camera_frames`  | Collect NV12 frames and publish them, support FD/DMA sharing; can provide FD socket service. |
+| `venc_node`  | `/camera_frames` | `/encoded_frames` | Hardware encode raw frames to H.264/H.265. |
+| `vdec_node`  | `/encoded_frames`| `/decoded_frames` | Decode encoded frames to NV12. |
+| `vo_node`    | `/camera_frames` | —                 | Hardware direct display screen (JdkVo). |
+| `infer_node` | `/camera_frames` | —(print/self-processing)  | YOLOv8 object detection on camera frames (example model). |
 
-> 注：所有消息字段（如 `width/height/stride/pix_format/is_dma/dma_fd/data` 等）随 `JdkFrameMsg` 传递。
+> Note: All message fields (such as `width/height/stride/pix_format/is_dma/dma_fd/data`, etc.) are passed with `JdkFrameMsg`.
 
-## 2. `camera_node`（相机采集）
+## 2. `camera_node`(Camera Capture)
 
-### 2.1 功能说明
-打开 V4L2 设备采集 NV12 帧，发布到 `/camera_frames`；同时启动 UNIX Socket（`socket_path`）用于 FD 传输（零拷贝）。
+### 2.1 Function Description
+Opens a V4L2 device to capture NV12 frames and publishes them to `/camera_frames`; simultaneously launches a UNIX Socket (`socket_path`) for File Descriptor (FD) transfer (zero-copy).
 
-### 2.2 订阅的话题
-- 无
+### 2.2 Subscribed Topics
+- None
 
-### 2.3 发布的话题
-- `/camera_frames` (`jdk_interfaces/msg/JdkFrameMsg`)：NV12 或 FD 共享帧。
+### 2.3 Published Topics
+- `/camera_frames` (`jdk_interfaces/msg/JdkFrameMsg`): NV12 or FD-shared frames.
 
-### 2.4 参数列表
+### 2.4 Parameter List
 
-| 参数名         | 类型   | 默认值                   | 说明 |
+| Parameter Name         | Type   | Default Value                  | Description |
 |----------------|--------|--------------------------|------|
-| `device`       | string | `"/dev/video50"`         | V4L2 设备路径（如 `/dev/video0`）。 |
-| `width`        | int    | `1280`                   | 帧宽。 |
-| `height`       | int    | `720`                    | 帧高。 |
-| `socket_path`  | string | `"/tmp/jdk_fd_socket"`   | FD 共享套接字路径。 |
+| `device`       | string | `"/dev/video50"`         |V4L2 device path (e.g., `/dev/video0`). |
+| `width`        | int    | `1280`                   | Frame width. |
+| `height`       | int    | `720`                    | Frame height. |
+| `socket_path`  | string | `"/tmp/jdk_fd_socket"`   | FD sharing socket path. |
 
-### 2.5 启动示例
+### 2.5 Launch Example
 ```bash
 ros2 run jdk_camera_node camera_node --ros-args \
   -p device:=/dev/video50 -p width:=1280 -p height:=720
 ```
 
-### 2.6 订阅示例
-订阅`/camera_frames`，详细见 §6 通用订阅示例。
+### 2.6 Subscription Example
+Subscribe to `/camera_frames`; for details, see §6 General Subscription Examples.
 
-## 3. `venc_node`（硬件编码）
+## 3. `venc_node`（Hardware Encoding）
 
-### 3.1 功能说明
-订阅 `/camera_frames`，将原始帧硬件编码为 H.264/H.265，发布到 `/encoded_frames`；支持 DMA/FD。
+### 3.1 Function Description
+Subscribes to `/camera_frames`, hardware-encodes the raw frames into H.264/H.265 format, and publishes them to `/encoded_frames`; supports DMA/FD.
 
-### 3.2 订阅的话题
+### 3.2 Subscribed Topics
 - `/camera_frames` (`jdk_interfaces/msg/JdkFrameMsg`)。
 
-### 3.3 发布的话题
+### 3.3 Published Topics
 - `/encoded_frames` (`jdk_interfaces/msg/JdkFrameMsg`)。
 
-### 3.4 参数列表
+### 3.4 Parameter List
 
-| 参数名            | 类型   | 默认值                        | 说明 |
+| Parameter Name            | Type   | Default Value                      | Description |
 |-------------------|--------|-------------------------------|------|
-| `width`           | int    | `1920`                        | 输入帧宽。 |
-| `height`          | int    | `1080`                        | 输入帧高。 |
-| `payload`         | int    | `CODING_H264`                 | 编码格式（H.264/H.265）。 |
-| `format`          | int    | `PIXEL_FORMAT_NV12`           | 输入像素格式。 |
-| `use_dma`         | bool   | `true`                        | 是否使用 DMA。 |
-| `venc_fd_socket`  | string | `"/tmp/jdk_fd_enc2out.sock"`  | 编码输出 FD 套接字。 |
-| （内部订阅套接字）| —      | `"/tmp/jdk_fd_socket"`        | 通常不需修改。 |
+| `width`           | int    | `1920`                        | Input frame width. |
+| `height`          | int    | `1080`                        | Input frame height. |
+| `payload`         | int    | `CODING_H264`                 | Encoding format (H.264/H.265). |
+| `format`          | int    | `PIXEL_FORMAT_NV12`           | Input pixel format. |
+| `use_dma`         | bool   | `true`                        | Whether to use DMA. |
+| `venc_fd_socket`  | string | `"/tmp/jdk_fd_enc2out.sock"`  | Encoding output FD socket. |
+| (Internal Subscription Socket)| —      | `"/tmp/jdk_fd_socket"`        | Typically does not require modification. |
 
-### 3.5 启动示例
+### 3.5 Launch Example
 ```bash
 ros2 run jdk_venc_node venc_node
 ```
 
-## 4. `vdec_node`（硬件解码）
+## 4. `vdec_node`（Hardware Decoding）
 
-### 4.1 功能说明
-订阅 `/encoded_frames`，解码至 NV12 并发布 `/decoded_frames`；可与编码节点通过 FD 套接字衔接。
+### 4.1 Function Description
+Subscribes to `/encoded_frames`, decodes the data into NV12 format, and publishes it to `/decoded_frames`; can be interfaced with the encoding node via an FD socket.
 
-### 4.2 订阅的话题
+### 4.2 Subscribed Topics
 - `/encoded_frames` (`jdk_interfaces/msg/JdkFrameMsg`)。
 
-### 4.3 发布的话题
+### 4.3 Published Topics
 - `/decoded_frames` (`jdk_interfaces/msg/JdkFrameMsg`)。
 
-### 4.4 参数列表
+### 4.4 Parameter List
 
-| 参数名           | 类型   | 默认值                       | 说明 |
+| Parameter Name           | Type   | Default Value                      | Description |
 |------------------|--------|------------------------------|------|
-| `width`          | int    | `1920`                       | 解码后帧宽。 |
-| `height`         | int    | `1080`                       | 解码后帧高。 |
-| `payload`        | int    | `CODING_H264`                | 输入码流类型。 |
-| `format`         | int    | `PIXEL_FORMAT_NV12`          | 输出像素格式。 |
-| `use_dma`        | bool   | `true`                       | 是否使用 DMA。 |
-| `dec_fd_socket`  | string | `"/tmp/jdk_fd_dec2out.sock"` | 解码输出 FD 套接字。 |
-| `venc_fd_socket` | string | `"/tmp/jdk_fd_enc2out.sock"` | 对接编码节点输出。 |
+| `width`          | int    | `1920`                       | Width of the decoded frame. |
+| `height`         | int    | `1080`                       | Height of the decoded frame. |
+| `payload`        | int    | `CODING_H264`                | Input bitstream type. |
+| `format`         | int    | `PIXEL_FORMAT_NV12`          | Output pixel format. |
+| `use_dma`        | bool   | `true`                       | Whether to use DMA. |
+| `dec_fd_socket`  | string | `"/tmp/jdk_fd_dec2out.sock"` | FD socket for decoder output. |
+| `venc_fd_socket` | string | `"/tmp/jdk_fd_enc2out.sock"` | Interface for the encoding node's output. |
 
-### 4.5 启动示例
+### 4.5 Launch Example
 ```bash
 ros2 run jdk_vdec_node vdec_node
 ```
 
-## 5. `vo_node`（硬件显示）
+## 5. `vo_node`（Hardware Display）
 
-### 5.1 功能说明
-订阅 `/camera_frames`，使用 `JdkVo` 进行硬件直出显示。
+### 5.1 Function Description
+Subscribes to `/camera_frames` and utilizes `JdkVo` for direct hardware display output.
 
-### 5.2 订阅的话题
+### 5.2 Subscribed Topics
 - `/camera_frames` (`jdk_interfaces/msg/JdkFrameMsg`)。
 
-### 5.3 发布的话题
-- 无
+### 5.3 Published Topics
+- None
 
-### 5.4 参数列表
+### 5.4 Parameter List
 
-| 参数名          | 类型   | 默认值                  | 说明 |
+| Parameter Name          | Type   | Default Value                  | Description |
 |-----------------|--------|-------------------------|------|
-| `width`         | int    | `1920`                  | 输入帧宽。 |
-| `height`        | int    | `1080`                  | 输入帧高。 |
-| `format`        | int    | `PIXEL_FORMAT_NV12`     | 输入像素格式。 |
-| `use_dma`       | bool   | `true`                  | 是否使用 DMA。 |
-| `cam_fd_socket` | string | `"/tmp/jdk_fd_socket"`  | 摄像头 FD 套接字路径。 |
+| `width`         | int    | `1920`                  | Input frame width. |
+| `height`        | int    | `1080`                  | Input frame height. |
+| `format`        | int    | `PIXEL_FORMAT_NV12`     | Input pixel format. |
+| `use_dma`       | bool   | `true`                  | Whether to use DMA. |
+| `cam_fd_socket` | string | `"/tmp/jdk_fd_socket"`  | Camera FD socket path. |
 
-### 5.5 启动示例
+### 5.5 Launch Example
 ```bash
 ros2 run jdk_vo_node vo_node
 ```
 
-## 6. `infer_node`（目标检测推理）
+## 6. `infer_node`（Object Detection Inference）
 
-### 6.1 功能说明
-订阅 `/camera_frames`，示例使用 YOLOv8（`yolov8n.q.onnx`）进行目标检测，并在终端打印结果。
+### 6.1 Function Description
+Subscribes to `/camera_frames`. This example uses YOLOv8 (`yolov8n.q.onnx`) to perform object detection and prints the results to the terminal.
 
-### 6.2 订阅的话题
+### 6.2 Subscribed Topics
 - `/camera_frames` (`jdk_interfaces/msg/JdkFrameMsg`)。
 
-### 6.3 发布的话题
-- 无（示例为日志/自处理）。
+### 6.3 Published Topics
+- None (This example focuses on logging/internal processing).
 
-### 6.4 参数列表
+### 6.4 Parameter List
 
-| 参数名        | 类型   | 默认值                 | 说明 |
+| Parameter Name        | Type   | Default Value                 | Description |
 |---------------|--------|------------------------|------|
-| `socket_path` | string | `"/tmp/jdk_fd_socket"` | 获取帧的 FD 套接字路径。 |
+| `socket_path` | string | `"/tmp/jdk_fd_socket"` | The path to the FD socket used for retrieving frames. |
 
-### 6.5 启动示例
+### 6.5 Launch Example
 ```bash
 ros2 run jdk_infer_node infer_node
 ```
 
 
-## 7. 统一订阅示例
+## 7. Unified Subscription Example
 
-### 7.1 Python 订阅 NV12 并显示（非 DMA）
+### 7.1 Python Subscription to NV12 and Display (Non-DMA)
 
 ```python
 import rclpy
@@ -189,8 +189,8 @@ if __name__ == '__main__':
     main()
 ```
 
-## 8. 常见问题（FAQ，精要）
+## 8. Frequently Asked Questions (FAQ - Highlights)
 
-- **如何切换 H.265？** 将 `venc_node.payload` 设置为 H.265 对应编码类型。  
-- **如何启用零拷贝？** 各节点 `use_dma=true` 且通过 FD 套接字互通（`socket_path` / `*_fd_socket`）。  
-- **显示节点不出图？** 确认 `vo_node` 订阅的是 `/camera_frames`，并与 `camera_node` 的分辨率/格式匹配。
+- **How to switch to H.265?** Set `venc_node.payload` to the encoding type corresponding to H.265.  
+- **How to enable zero copy?** Ensure that `use_dma=true` for each node and that they communicate via FD sockets (`socket_path` / `*_fd_socket`).  
+- **The display node isn't showing any images?** Verify that `vo_node` is subscribed to `/camera_frames` and that its resolution/format matches that of `camera_node`.
