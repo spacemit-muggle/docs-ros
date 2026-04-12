@@ -1,4 +1,6 @@
+---
 sidebar_position: 1
+---
 
 # 基于 Ethercat 控制电机
 

@@ -6,16 +6,16 @@ sidebar_position: 2
 
 ROS2_LXQT currently provides two image formats:
 
-- **SD card raw image**  
+- **SD card raw image**
 
-  Ends with `*.img.zip`, can be written to an SD card using [balenaEtcher](https://etcher.balena.io/), or unzipped and flashed using the `dd` command.
+  Files in this format end with `*.img.zip`. They can be written to an SD card using [balenaEtcher](https://etcher.balena.io/), or extracted and flashed using the `dd` command.
 
 - **Custom image**
 
-  Ends with `.zip`, can be flashed using Titan Flasher, or unzipped and flashed using `fastboot`.
+  Files in this format end with `.zip`. They can be flashed using Titan Flasher, or extracted and flashed using `fastboot`.
 
-**Default credentials:**  
-- Root user password: `bianbu`  
+**Default credentials:**
+- Root user password: `bianbu`
 - Default Bianbu user password: `bianbu`
 
 ## Download

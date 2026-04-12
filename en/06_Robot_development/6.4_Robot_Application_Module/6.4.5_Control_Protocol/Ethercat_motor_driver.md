@@ -1,52 +1,58 @@
+sidebar_position: 1
 
+# Control Motor Based on EtherCAT
 
-# 基于 Ethercat 控制电机
-本文档介绍如何基于Ethercat协议控制一体化伺服电机，以杰美康IHSS42-24-05-EC为例
+This document explains how to control an integrated servo motor based on the EtherCAT protocol, using the JMC IHSS42-24-05-EC as an example.
 
-## 硬件连接
-![硬件连接](images/ethercat_motor.jpg)
-如图所示，接入电机电源，网线一端连接电机IN口，另一端插入开发板网口，
-电源指示灯常亮表示电机正常工作
+## Hardware Connection
 
+![Hardware connection](images/ethercat_motor.jpg)
+As shown in the figure, connect the motor power supply. Connect one end of an Ethernet cable to the motor IN port and the other to the development board Ethernet port. A continuously illuminated power indicator confirms normal motor operation.
 
-## 环境说明
-bianbu-ROS固件已集成Ethercat环境，在启动前执行以下步骤确认服务是否启用
+## Environment Description
 
-**接线完成后，查看设备节点是否出现**
+The ROS 2 firmware already integrates the EtherCAT environment. Before startup, perform the following steps to verify that the service is enabled.
+
+**After the wiring is completed, check whether the device node appears.**
+
 ```bash
 ls /dev/EtherCAT0
 ```
-如果出现，跳转到[下载软件包](#下载软件包)小节进行下一步
 
-如果节点没有出现，跳转到[启用Ethercat](#启用ethercat)小节进行设置
+If the node appears, proceed to [Download Software Package](#download-software-package) for the next step.
 
+If the node does not appear, go to [Enable EtherCAT](#enable-ethercat) for configuration.
 
-### 启用Ethercat
+### Enable EtherCAT
 
-#### 1. 打开设备树文件夹
+#### 1. Open the Device Tree File Folder
 
 ```bash
 cd /boot/spacemit/6.6.63/
 ```
 
-#### 2. 获取开发板dts文件
+#### 2. Obtain the Development Board DTS File
+
 ```bash
 sudo dtc -I dtb -O dts -o k1-x_MUSE-Pi-Pro.dts k1-x_MUSE-Pi-Pro.dtb
 
 
-#如果没有dtc工具执行此命令下载
+# Run the following command if the dtc tool is not installed.
 sudo apt install device-tree-compiler
 ```
-注意：本例使用MUSE-Pi-Pro开发板，如果使用其他类型开发板，请将命令行中的设备树文件名替换为实际使用的板型
 
+**Note:** This example uses the MUSE-Pi-Pro development board. If a different development board is used, replace the device tree filename in the command with the actual board name.
 
-#### 3. 修改dts
+#### 3. Modify DTS
+
 ```bash
 vi k1-x_MUSE-Pi-Pro.dts
 ```
-* 找到 **&eth0(同ethernet@cac80000)** 节点
 
-  **修改compatiable属性为 spacemit,k1x-ec-emac**
+* Locate the **&eth0** node (same as `ethernet@cac80000`).
+
+  Modify the `compatible` property to `spacemit,k1x-ec-emac`.
+
 ```bash
  ethernet@cac80000 {
         compatible = "spacemit,k1x-ec-emac";
@@ -78,12 +84,12 @@ vi k1-x_MUSE-Pi-Pro.dts
 
 ```
 
+* Locate **&ec_master** (same as `ethercat_master`).
 
-* 找到 **&ec_master(同ethercat_master)**
+  Modify `compatible = "igh,k1x-ec-master";`
 
-  修改 **compatible = "igh,k1x-ec-master";**
+  Modify `status = "okay";`
 
-  修改 **status = "okay";**
 ```bash
 ethercat_master {
         compatible = "igh,k1x-ec-master";
@@ -98,65 +104,69 @@ ethercat_master {
 
 ```
 
-#### 4. 编译新的dtb
+#### 4. Compile New DTB
+
 ```bash
 sudo dtc -I dts -O dtb -o k1-x_MUSE-Pi-Pro.dtb k1-x_MUSE-Pi-Pro.dts
 ```
-#### 5. 重启开发板
+
+#### 5. Reboot the Development Board
+
 ```bash
 sudo reboot
 ```
-重启后更改生效
 
-#### 6. 修改设备节点权限
+The changes will take effect after a system reboot.
+
+#### 6. Modify Device Node Permissions
 
 ```bash
 sudo chown bianbu:bianbu /dev/EtherCAT0
 ```
-设备节点默认权限为root, 普通用户操作需要手动更改权限，每次重启都需要手动输入该命令获取权限
+The default owner of the device node is `root`. To allow access for a regular user, you must manually modify the permissions after each reboot.
 
+Then, check the `EtherCAT0` device again.
 
-
-此时再次查看Ethercat0设备
 ```bash
 bianbu@bianbu:~$ ls -l /dev/EtherCAT0
 crw------- 1 bianbu bianbu 240, 0 Sep 29 20:32 /dev/EtherCAT0
 ```
 
+### Download Software Package
 
+**Note:** If you switch to the root user from this step onward, no permission-related errors will occur when launching the node, and no additional file modifications are required.
 
-### 下载软件包
+#### 1. Create Workspace
 
-**注：如果从本步骤开始切换至root用户执行操作，在启动节点时将不会报错，无需修改任何文件**
-
-#### 1. 创建工作区
 ```bash
 mkdir -p ~/ros2_ws/src
 cd ~/ros2_ws/src
 
-#创建ros2功能包
+# Create a ROS 2 functional package
 ros2 pkg create motor_driver --build-type ament_cmake --dependencies ethercat_driver_ros2 rclcpp std_msg
 ```
 
-#### 2. 下载路径
+#### 2. Download the Package
+
 ```bash
 cd ~
 
-# 克隆整个仓库
+# Clone the entire repository
 git clone https://gitlab.dc.com:8443/bianbu/bianbu-robot/brdk.git
 
-# 复制资源到工作区
+# Copy the resource to the workspace
 cp -r brdk/core_pkgs/jobot_bringup_pkgs/jobot_protocol_bringup ~/ros_ws/src/
 ```
 
-#### 3. 安装编译环境
+#### 3. Install the Build Environment
+
 ```bash
 cd ~/ros2_ws
 
-#安装编译环境
+# Install the build environment
 apt install -y colcon python3-rosdep gcc g++
 
-#安装依赖
+# Install dependencies
 apt install -y ros-humble-control-msgs ros-humble-hardware-interface
 
 apt install -y ros-humble-hardware-interface \
@@ -172,12 +182,13 @@ ros-humble-velocity-controllers \
 ros-humble-ros2-control
 ```
 
-#### 4. ros2 ethercat编译
+#### 4. Compile ROS 2 EtherCAT Packages
+
 ```bash
 
 cd ~/ros2_ws/
 
-sudo rosdep init    #非root用户，需要加sudo
+sudo rosdep init    # Non-root users need to add sudo
 rosdep update
 rosdep install --ignore-src --from-paths . -y -r
 
@@ -185,35 +196,35 @@ colcon build
 
 ```
 
+## Launch and Control
 
-## 启动与控制
+### 1. Launch the EtherCAT Master Service
 
-
-### 1. 启动 ethercat master服务
 ```bash
-sudo igh_driver          #bianbu-ROS已集成，直接运行
+sudo igh_driver          # ROS 2 is pre-integrated and can be run directly.
 ```
 
-如果您下载烧录的固件版本未集成igh_driver
+If the `igh_driver` is not integrated in your flashed firmware version:
 
 ```bash
 cd brdk/core_pkgs/jobot_bringup_pkgs/jobot_protocol_bringup/resource
 ```
 
-在此路径下已预备可执行文件
+The executable file is available in this path.
 
+Execute:
 
-执行
 ```bash
 sudo chmod +x igh_driver
 
 ./igh_driver
 ```
 
-可通过此命令查看主站、从站状态
+You can check the status of the master and slave devices using the following commands:
+
 ```bash
 ethercat master
-#输出
+#Output
 Master0
   Phase: Idle
   Active: no
@@ -250,12 +261,11 @@ Master0
 
 
 ethercat slaves
-#输出
+#output
 0  0:0  PREOP  +  IHSS42-EC
 ```
 
-
-### 2. 启动节点
+### 2. Launch the Node
 
 ```bash
 cd ~/ros2_ws
@@ -263,25 +273,25 @@ source install/setup.bash
 ros2 launch jobot_protocol_bringup motor_drive.launch.py
 ```
 
-注：以root用户操作将不会出现以下报错或警告
+**Note:** Running as the root user avoids the following errors and warnings.
 
-* 如果启动失败，请检查设备节点权限
+* If the launch fails, check the device node permissions.
+
 ```bash
 ls -l /dev/EtherCAT0
 
-如果为root权限，执行此命令修改为普通用户可用
+If the device is owned by `root`, run the following command to make it available to regular users.
 
 sudo chown bianbu:bianbu /dev/EtherCAT0
 ```
 
-* 如果因为节点实时调度警告启动失败，请修改文件并重启开发板
+* If the launch fails because of a real-time scheduling warning, modify the file and reboot the development board.
 
 ```bash
 sudo vi /etc/security/limits.conf
 
 
-在 #@student        -       maxlogins       4    下
-添加
+Add the following lines below the line `#@student        -       maxlogins       4`.
 
 bianbu - rtprio 99
 bianbu - memlock unlimited
@@ -290,63 +300,67 @@ bianbu - nice -20
 # End of file
 ```
 
+### 3. Control the Motor
 
-### 3. 控制电机
-
-打开一个新终端
+Open a new terminal.
 
 ```bash
-#持续发送position位置
+# Continuously send position
 cd ~/ros2_ws
 
 source install/setup.bash
-#每次打开新终端都要执行source命令以设置ROS环境变量
+# Execute the source command every time you open a new terminal to set the ROS environment variables.
 
 ros2 topic pub -r 0.2 /trajectory_controller/joint_trajectory trajectory_msgs/msg/JointTrajectory '{header: {stamp: {sec: 0, nanosec: 0}, frame_id: ""}, joint_names: ["joint_1"], points: [{positions: [100.0], velocities: [0.0], accelerations: [0.0], time_from_start: {sec: 1, nanosec: 0}},{positions: [10000.0], velocities: [0.0], accelerations: [0.0],time_from_start: {sec: 5, nanosec: 0}}]}'
 ```
-电机以固定频率转动
 
+The motor will rotate at a fixed frequency.
 
+**Parameter Description**
 
-**参数说明**
 ```bash
 1.
 - ros2 topic pub
 
-  ---  发布话题
+  ---  Publish a topic
 
 2.
 - -r 0.2
 
-  ---  指定以0.2 Hz的速率发布（即5s一次）
+  ---  Specify the publish rate at 0.2 Hz (i.e., once every 5 seconds)
 
 3.
 - /trajectory_controller/joint_trajectory
 
---- 话题名
-  由控制器名称trajectory_controller + 功能joint_trajectory组成
-  需与控制器配置文件（controllers.yaml）中匹配
+--- Topic name
+  Composed of the controller name `trajectory_controller` and the function `joint_trajectory`.
+  Must match the configuration in the controller configuration file (`controllers.yaml`).
 
 4.
 - trajectory_msgs/msg/JointTrajectory
 
---- ROS2中用于描述关节轨迹的标准消息类型
+--- Standard message type in ROS2 for describing joint trajectories.
 
 5.
-##消息内容，格式在ROS中定义
+## Message content, format defined in ROS.
 - {header: {stamp: {sec: 0, nanosec: 0}, frame_id: ""}
 
---- 消息头部，携带元数据
+--- Message header with metadata.
 
-参数：
-        - stamp: {sec: 0, nanosec: 0} --- 消息时间戳，（0,0）表示使用控制器接收消息的当前时间作为轨迹开始时间
-        - frame_id: ""    --- 参考坐标系名称，空字符串表示不指定
+Parameters:
+ - stamp: {sec: 0, nanosec: 0} 
+ 
+ --- Message timestamp, (0,0) indicates using the current time when the controller receives messages as the trajectory start time. 
+
+- frame_id: ""   
+
+ --- Reference coordinate frame name. An empty string indicates no coordinate frame is specified.
 
 
 6.
 - joint_names: ["joint_1"]
 
---- 需要控制的关节名称列表，与控制器配置文件中定义的关节名必须完全一致
+--- List of joint names to be controlled. It must be completely consistent with the joint names defined in the configuration files. 
 
 
 7.
@@ -356,30 +370,29 @@ ros2 topic pub -r 0.2 /trajectory_controller/joint_trajectory trajectory_msgs/ms
 {positions: [10000.0], velocities: [0.0], accelerations: [0.0],time_from_start: {sec: 5, nanosec: 0}}
 ]
 
---- 轨迹点列表，每个点定义了关节在某个时刻的状态
+--- List of trajectory points. Each point defines joint's state at a specific time. 
 
-参数：
-      - positions: [100.0]      --- 关节目标位置
-      - velocities: [0.0]       --- 关节到达该点时的目标速度
-      - accelerations: [0.0]    --- 关节到达该点时的目标加速度
-      - time_from_start: {sec: 1, nanosec: 0}   --- 从轨迹开始~到达该点的时间
+Parameters:
+   - positions: [100.0]      --- Target position of the joint
+   - velocities: [0.0]       --- Target velocity of the joint when reaching this point.
+   - accelerations: [0.0]    --- Target acceleration of the joint when reaching this point. 
+   - time_from_start: {sec: 1, nanosec: 0}   --- Time elapsed from the start of the trajectory to reaching this point. 
 ```
 
+### 4. Read Position Information
 
-### 4. 读取位置信息
-
-打开一个新终端
+Open a new terminal:
 
 ```bash
 cd ~/ros_ws
 source install/setup.bash
 ros2 topic echo /joint_states
 ```
-**参数说明**
+
+**Parameter Description**
 
 ```bash
-ros3 topic echo --- 打印实时话题内容
+ros3 topic echo --- Print real-time topic content
 
-/joint_states   --- 话题名
+/joint_states   --- Topic Name
 ```
-
