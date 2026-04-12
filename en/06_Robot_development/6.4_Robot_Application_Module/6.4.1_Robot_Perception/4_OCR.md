@@ -1,78 +1,78 @@
 sidebar_position: 4
 
-# OCR 光学字符识别
+# OCR (Optical Character Recognition)
 
-## PaddleOCR 简介
+## PaddleOCR
 
-PaddleOCR（简称 **PPOCR**）是由百度飞桨（PaddlePaddle）团队开源的一个**端到端文字识别（OCR）系统**，致力于提供**“从文本检测 → 方向分类 → 文本识别 → 后处理”** 的完整解决方案。
- 它不仅支持中英文、多语言场景，还广泛适用于文档、票据、路牌、车牌、自然场景等 OCR 应用。
+PaddleOCR (**PPOCR**) is an **end-to-end optical character recognition (OCR) system** open-sourced by PaddlePaddle. It provides a complete solution covering **text detection → orientation classification → text recognition → post-processing**.
+It supports not only Chinese and English but also multilingual scenarios, and is widely applicable to various OCR applications like documents, tickets, guide boards, license plates, natural scenes.
 
-本示例展示如何基于 SpacemiT 智算核，使用图片或ROS2消息作为输入，执行 OCR 模型的推理，并通过 ROS 2 发布检测结果。
+This example demonstrates how to perform OCR model inference on the SpacemiT AI computing core, using images or ROS 2 messages as input, and publishing detection results via ROS 2.
 
-## 环境准备
+## Environment Setup
 
-建议使用 ROS2_LXQT 系统，并确保已经安装了开发依赖
+It is recommended to use the ROS2_LXQT system and make sure the development dependencies are installed.
 
-### 安装依赖
+### Install Dependencies
 
 ```bash
 sudo apt install python3-opencv ros-humble-cv-bridge ros-humble-camera-info-manager \
 ros-humble-image-transport python3-spacemit-ort python3-pyclipper
 ```
 
-### 导入 ROS2 环境
+### Load ROS2 Environment
 
 ```bash
 source /opt/bros/humble/setup.bash
 ```
 
-## 图片推理
+## Image Inference
 
-**准备图片**
+ **Prepare images**
 
 ```bash
 cp /opt/bros/humble/share/jobot_ppocr_py/data/test.jpg .
 ```
 
-### **本地保存推理结果**
+### Save Inference Results Locally
 
 ```bash
 ros2 launch rdk_perception ocr_infer_img.launch.py img_path:=/home/bianbu/test.jpg
 ```
 
-输出结果将保存在当前目录的 `ocr_result.jpg` 中，如图所示。
+The output result will be saved in the current directory as `ocr_result.jpg`, as shown in the following figure.
 
 ![](./images/ocr1.png)
 
-终端打印如下
+The terminal prints:
 
 ![](./images/ocr2.png)
 
-### 参数说明
+### Parameter Description
 
-**ocr_infer_img.launch.py 的参数说明**
+**`ocr_infer_img.launch.py` Parameter Description**
 
-| **参数名称** | 作用                 | 默认值        |
+| **Parameter Name** | Role                 | Default Value        |
 | ------------ | -------------------- | ------------- |
-| img_path     | 推理时使用的图片路径 | data/test.jpg |
+| `img_path`     | inference image path | `data/test.jpg` |
 
-## 使用推理服务
+## Inference Service Usage
 
-推理服务接受原始图像消息并返回OCR推理结果，可以通过 `ros2 interface show jobot_interfaces/srv/OCRInfer` 查看服务定义。
+The inference service accepts raw image messages and returns OCR inference results. You can view the service definition via  `ros2 interface show jobot_interfaces/srv/OCRInfer`.
 
-### 开启服务
+### Launch the Service
 
 ```
 ros2 launch rdk_perception ocr_service.launch.py
 ```
 
-终端打印：
+The terminal prints:
 
 ![](./images/ocr3.png)
 
-### 客户端代码
+### Client Code
 
-编写客户端代码
+Write client code:
 
 ```
 import rclpy
@@ -129,20 +129,20 @@ if __name__ == '__main__':
     main()
 ```
 
-注意确保这里的图像路径正确。
+Make sure the image path is correct.
 
-### 请求服务
+### Request Service
 
-客户端代码保存为 ocr_client.py
+Save the client code as `ocr_client.py`.
 
-然后执行：
+Then, execute:
 
 ```
 python3 ocr_client.py
 ```
 
-终端打印：
+The terminal prints:
 
 ![](./images/ocr4.png)
 
-结果可视化文件保存在 ocr_result_srv.jpg
+The visualized result file is saved in `ocr_result_srv.jpg`.

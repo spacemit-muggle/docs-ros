@@ -1,29 +1,29 @@
 sidebar_position: 5
 
-# YOLOE 物体检测
+# YOLOE Object Detection
 
-## YOLOE 简介
+## Introduction
 
-[YOLOE (Real-Time Seeing Anything)](https://arxiv.org/html/2503.07465v1) 是零样本、可提示 YOLO 模型的一项新进展，专为 **开放词汇表** 检测和分割而设计。 与之前仅限于固定类别的 YOLO 模型不同，YOLOE 使用文本、图像或内部词汇表提示，从而能够实时检测任何对象类别。 YOLOE 基于 YOLOv10 构建，并受到 [YOLO-World](https://docs.ultralytics.com/zh/models/yolo-world/) 的启发，以最小的速度和准确性影响实现了 **最先进的零样本性能**。
+[YOLOE (Real-Time Seeing Anything)](https://arxiv.org/html/2503.07465v1) is a new advancement in zero-shot, promptable YOLO models. It is designed for "open-vocabulary" detection and segmentation. Unlike previous YOLO models restricted to fixed categories, YOLOE supports prompts from text, images, or an internal vocabulary, enabling real-time detection of arbitrary object classes. Built on YOLOv10 and inspired by [YOLO-World](https://docs.ultralytics.com/zh/models/yolo-world/), YOLOE achieves **state-of-the-art zero-shot performance** with minimal impact on speed and accuracy.
 
-本示例展示如何基于 SpacemiT 智算核，使用图片或视频流作为输入，执行 YOLOE 模型的推理，并通过 ROS 2 发布检测结果。
+This example demonstrates how to perform inference with the YOLOE model on the SpacemiT AI computing core, using image or video streams as input, and publishing detection results via ROS 2.
 
-## 环境准备
+## Environment Setup
 
-### 安装依赖
+### Dependency Installation
 
 ```bash
 sudo apt install python3-venv python3-pip ros-humble-camera-info-manager \
 ros-humble-image-transport python3-spacemit-ort
 ```
 
-### 导入 ROS2 环境
+### ROS 2 Environment Setup
 
 ```bash
 source /opt/bros/humble/setup.bash
 ```
 
-### 准备虚拟环境
+### Virtual Environment Setup
 
 ```
 python3 -m venv ~/yoloe_env
@@ -35,15 +35,15 @@ pip install -r /opt/bros/humble/share/jobot_yoloe_py/data/requirements.txt
 export PYTHONPATH="$HOME/yoloe_env/lib/python3.12/site-packages":$PYTHONPATH
 ```
 
-## 图片推理
+## Image Inference
 
-**准备图片**
+### Image Preparation
 
 ```bash
 cp /opt/bros/humble/share/jobot_yoloe_py/data/bus.jpg .
 ```
 
-### **本地保存推理结果**
+### Save Inference Results Locally
 
 ```bash
 ros2 launch rdk_perception yoloe_infer_img.launch.py \
@@ -51,17 +51,17 @@ img_path:=/home/bianbu/bus.jpg \
 text_prompt:="A person wearing off-white clothes"
 ```
 
-输出结果将保存在当前目录的 `yoloe_result.jpg` 中，如图所示。
+The output result will be saved in `yoloe_result.jpg` in the current directory, as shown in the following figure:
 
 ![](images/yoloe1.png)
 
-终端打印如下
+The terminal prints:
 
 ![](./images/yoloe2.png)
 
-### Web 可视化推理结果
+### Web Visualization for Inference Results
 
-启动推理发布节点（终端 1）：
+Launch the inference publishing node (terminal 1):
 
 ```bash
 ros2 launch rdk_perception yoloe_infer_img.launch.py \
@@ -70,13 +70,13 @@ img_path:=/home/bianbu/bus.jpg \
 text_prompt:="A person wearing off-white clothes"
 ```
 
-启动 Web 可视化服务（终端 2）：
+Launch the web visualization service (terminal 2):
 
 ```bash
 ros2 launch rdk_visualization websocket_cpp.launch.py image_topic:='/result_img'
 ```
 
-终端提示访问地址：
+The terminal displays the access address:
 
 ```
 ...
@@ -84,18 +84,17 @@ Please visit in your browser: http://<IP>:8080
 ...
 ```
 
-打开浏览器输入 `http://<IP>:8080`，即可查看实时推理图像结果。
+Enter `http://<IP>:8080` in your browser to view real-time inference image results.
 
-
-还可以通过追加 port:=xxxx 参数来指定端口号，以避免端口冲突
+You can also specify the port number by appending the `port:=xxxx` parameter to avoid a port conflict.
 
 ![](images/yoloe3.png)
 
-### 结果订阅
+### Results Subscription
 
-输入 `ros2 topic echo /inference_result` 查看推理结果话题
+Run `ros2 topic echo /inference_result` to view the inference result topic.
 
-使用以下代码实现简单的话题订阅
+Use the following code to implement a simple topic subscription:
 
 ```
 from rclpy.node import Node
@@ -130,27 +129,25 @@ def main(args=None):
 main()
 ```
 
-### 参数说明
+### Parameter Description
 
-**yoloe_infer_img.launch.py 的参数说明**
+Parameter Description of **`yoloe_infer_img.launch.py`**
 
-|    **参数名称**    |                             作用                             |      默认值       |
+|    **Parameter Name**    |                             Role                             |      Default Value       |
 | :----------------: | :----------------------------------------------------------: | :---------------: |
-|      img_path      |                     推理时使用的图片路径                     |   data//bus.jpg   |
-| publish_result_img |               是否以图像消息的形式发布推理结果               |       false       |
-|  result_img_topic  |    发布的渲染图像消息名，publish_result_img为true时才有效    |    /result_img    |
-|    result_topic    |                     发布的推理结果消息名                     | /inference_result |
-|   conf_threshold   |        控制**检测结果可信度**的最低标准（过滤低分框）        |        0.2        |
-|   iou_threshold    |           控制**去重规则**的严格程度（处理重叠框）           |        0.7        |
-|    text_prompt     | 控制**检测目标的范围**（常规类别，或物体的自然语言描述，以`,`分隔不同类别描述） |     "person"      |
+|      `img_path`      |                    Image path used for inference                     |   `data//bus.jpg`   |
+| `publish_result_img` |               Whether to publish inference result in the form of image messages                |       `false`       |
+|  `result_img_topic`  |   Name of the published rendered image topic; valid only when `publish_result_img` is `true`    |    `/result_img`    |
+|    `result_topic`    |                    Name of the published inference result topic                      | `/inference_result` |
+|   `conf_threshold`   |       Controls the **minimum confidence threshold for detection results** (filters out low-score boxes) |        `0.2`        |
+|   `iou_threshold`    |          Controls the strictness of the **deduplication rule** (handles overlapping  boxes)           |        `0.7`        |
+|    `text_prompt`     | Controls the **scope of detection targets** (standard categories or natural language descriptions of objects, separated by `,` for multiple categories) |     "person"      |
 
+## Inference Service Usage
 
+The inference service accepts raw image messages and text prompts and returns YOLOE inference results. You can view the service definition with `ros2 interface show jobot_interfaces/srv/YOLOEInfer`.
 
-## 使用推理服务
-
-推理服务接受原始图像消息和文本提示并返回 YOLOE 推理结果，可以通过 `ros2 interface show jobot_interfaces/srv/YOLOEInfer` 查看服务定义。
-
-### 开启服务
+### Launch the Service
 
 ```
 source ~/yoloe_env/bin/activate
@@ -161,13 +158,13 @@ export PYTHONPATH="$HOME/yoloe_env/lib/python3.12/site-packages":$PYTHONPATH
 ros2 launch rdk_perception yoloe_service.launch.py
 ```
 
-终端打印：
+The terminal prints:
 
 ![](./images/yoloe4.png)
 
-### 客户端代码
+### Client Code
 
-编写客户端代码
+Write client code:
 
 ```
 import rclpy
@@ -207,7 +204,7 @@ def main():
     img_result = client.bridge.imgmsg_to_cv2(resp.result_img, desired_encoding='bgr8')
 
     cv2.imwrite('yoloe_service_result.jpg', img_result)
-    print("The yoloe result are saved in: yoloe_service_result.jpg")
+    print("The YOLOE result is saved as: yoloe_service_result.jpg")
 
     client.destroy_node()
     rclpy.shutdown()
@@ -217,13 +214,13 @@ if __name__ == "__main__":
 
 ```
 
-注意确保这里的图像路径正确。
+**Note:** Make sure the image path is correct.
 
-### 请求服务
+### Request Service
 
-客户端代码保存为 yoloe_client.py
+Save the client code as `yoloe_client.py`.
 
-然后执行：
+Then, execute:
 
 ```
 source ~/yoloe_env/bin/activate
@@ -234,20 +231,17 @@ export PYTHONPATH="$HOME/yoloe_env/lib/python3.12/site-packages":$PYTHONPATH
 python3 yoloe_client.py
 ```
 
-终端打印：
+The terminal prints:
 
 ![](./images/yoloe5.png)
 
-结果可视化文件保存在 yoloe_service_result.jpg
+The visualization result file is saved as `yoloe_service_result.jpg`.
 
+### Parameter Description
 
+**Parameter description of `yoloe_service.launch.py`**
 
-### 参数说明
-
-**yoloe_service.launch.py 的参数说明**
-
-|  **参数名称**  |                      作用                      | 默认值 |
+|  **Parameter Name**  |                      Role                      | Default Value |
 | :------------: | :--------------------------------------------: | :----: |
-| conf_threshold | 控制**检测结果可信度**的最低标准（过滤低分框） |  0.2   |
-| iou_threshold  |    控制**去重规则**的严格程度（处理重叠框）    |  0.7   |
-
+| `conf_threshold` | Controls the **minimum confidence threshold for detection results** (filters out low-confidence bounding boxes) |  `0.2`   |
+| `iou_threshold`  | Controls the strictness of the **deduplication rule** (handles overlapping bounding boxes)    |  `0.7`   |
