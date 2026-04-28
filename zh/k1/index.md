@@ -1,6 +1,10 @@
+---
+sidebar_poisition: 1
+---
+
 # ROS 2
 
-- [简介](root_overview.md)
+- [简介](intro.md)
 - [镜像](image.md)
 - [1. 快速开始](./01_Quick_start/index.md)
 - [2. ROS2_LXQT 基础使用e](./02_System_configuration/index.md)
